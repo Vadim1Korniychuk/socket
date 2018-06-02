@@ -1,14 +1,14 @@
 /**
  * Server program to process requests for a Country's Capital.
  * 5/10/2016
- * 
+ *
  * @author Okeke Arthur Ugochukwu
  * @email : arthurugochukwu@gmail.com
  * @github : ...
- * @facebook : 
- * 
+ * @facebook :
  * @version : 0.1
  */
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -22,17 +22,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Server {
-    
+
     private static final String FILE = "data.file";
-    
+
     private static void loadData(HashMap<String, String> H) {
-        
+
         //open the file and read, line by line
-        
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(FILE));
             String in;
-            while((in=br.readLine()) != null) {
+            while ((in = br.readLine()) != null) {
                 String[] data = in.split(",");
                 H.put(data[0].toLowerCase(), data[1].toLowerCase());
             }
@@ -42,25 +42,25 @@ public class Server {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static void main(String[] args) throws IOException {
-        
+
         int port = args.length != 1 ? 3456 : Integer.parseInt(args[0]);
-       
+
         HashMap<String, String> map = new HashMap<>();
-        
+
         loadData(map);
-        
+
         ServerSocket server = null;
         try {
-            
-           server = new ServerSocket(port,10);
-            
-            while(!server.isClosed()) {
-                
+
+            server = new ServerSocket(port, 10);
+
+            while (!server.isClosed()) {
+
                 Socket accept = server.accept();
-                
-                Thread ins = new Thread(){
+
+                Thread ins = new Thread() {
                     @Override
                     public void run() {
                         try {
@@ -70,28 +70,34 @@ public class Server {
 
                             String in;
 
-                            while((in=br.readLine()) != null) {
-                                in=in.toLowerCase();
-                                if(!map.containsKey(in)) {
-                                    out.println("Please check your input and try again .");
-                                }else{
-                                    out.println("The capital of "+in+" <is> "+map.get(in));
+                            while ((in = br.readLine()) != null) {
+                                in = in.toLowerCase();
+                                String[] words = in.split("[^\\w']+|[.,!?;]");
+                                StringBuilder result = new StringBuilder();
+                                for (String word : words) {
+                                    for (int i = 1; i < word.length(); i+=1) {
+                                        if (word.charAt(i) == word.charAt(i - 1)) {
+                                            result.append(" ").append(word);
+                                            break;
+                                        }
+                                    }
                                 }
+                                out.println("Result: " + result);
 
                             }
                         } catch (Exception ex) {
                             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-                            
+
                         }
                     }
                 };
                 ins.start();
             }
-          
-        } catch(Exception e) {
+
+        } catch (Exception e) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, e);
-            if(server != null) server.close();
+            if (server != null) server.close();
         }
-        
+
     }
 }
